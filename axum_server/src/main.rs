@@ -18,6 +18,7 @@ use tokio::{
     task::{JoinHandle, spawn},
     time::sleep,
 };
+use serialport::{SerialPortBuilder, DataBits, Parity, StopBits, FlowControl};
 
 // Define shared state to keep track of the current background task
 struct AppState {
@@ -77,17 +78,28 @@ async fn move_direction(
         let mut stop_rx = rx;
 
         // Set up UDP socket to send messages
-        let socket = UdpSocket::bind("0.0.0.0:0").await.unwrap();
-        let target_addr = "127.0.0.1:12345".parse::<SocketAddr>().unwrap();
+        // let socket = UdpSocket::bind("0.0.0.0:0").await.unwrap();
+        // let target_addr = "192.168.1.35:12345".parse::<SocketAddr>().unwrap();
 
-        if direction == "x" || direction == "y" {
-            let _ = socket.send_to(direction.as_bytes(), &target_addr).await;
+        // Serial
+        let mut serial = serialport::new("/dev/tty.usbmodem14201", 9600).open().expect("Failed to open port");
+
+        if direction == "x" || direction == "y" || direction == "l" || direction == "r" {
+            // let _ = socket.send_to(direction.as_bytes(), &target_addr).await;
+            serial.write(direction.as_bytes()).ok();
+        } else if direction == "ff" {
+            // let _ = socket.send_to("f".as_bytes(), &target_addr).await;
+            serial.write(direction.as_bytes()).ok();
+        } else if direction == "bb" {
+            // let _ = socket.send_to("b".as_bytes(), &target_addr).await;
+            serial.write(direction.as_bytes()).ok();
         } else {
             loop {
                 // Task 1 specific behavior
                 println!("Task 1 is running...");
                 // Send a UDP message with character 'f'
-                let _ = socket.send_to(direction.as_bytes(), &target_addr).await;
+                // let _ = socket.send_to(direction.as_bytes(), &target_addr).await;
+                serial.write(direction.as_bytes()).ok();
 
                 // Sleep for 150 milliseconds
                 sleep(Duration::from_millis(100)).await;

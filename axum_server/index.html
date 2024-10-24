@@ -15,8 +15,8 @@
         }
         .controller {
             display: grid;
-            grid-template-rows: repeat(3, 100px);
-            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(4, 100px);
+            grid-template-columns: repeat(4, 100px);
             gap: 10px;
         }
         button {
@@ -37,13 +37,15 @@
 <body>
 
 <div class="controller">
-    <button onclick="sendCommand('f')" style="grid-column: 3;">Forward</button>
-    <button onclick="sendCommand('x')" style="grid-row: 2; grid-column: 1;">Yaw Left</button>
-    <button onclick="sendCommand('l')" style="grid-row: 2; grid-column: 2;">Left</button>
-    <button onclick="sendCommand('s')" style="grid-row: 2; grid-column: 3;">Stop</button>
-    <button onclick="sendCommand('r')" style="grid-row: 2; grid-column: 4;">Right</button>
-    <button onclick="sendCommand('y')" style="grid-row: 2; grid-column: 5;">Yaw Right</button>
-    <button onclick="sendCommand('b')" style="grid-column: 3;">Backward</button>
+    <button onclick="sendCommand('f')" style="grid-column: 3; grid-row: 1;">Fwd!</button>
+    <button onclick="sendCommand('ff')" style="grid-column: 3; grid-row: 2;">Fwd</button>
+    <button onclick="sendCommand('x')" style="grid-row: 3; grid-column: 1;">YLeft</button>
+    <button onclick="sendCommand('l')" style="grid-row: 3; grid-column: 2;">Left</button>
+    <button onclick="sendCommand('s')" style="grid-row: 3; grid-column: 3;">Stop</button>
+    <button onclick="sendCommand('r')" style="grid-row: 3; grid-column: 4;">Right</button>
+    <button onclick="sendCommand('y')" style="grid-row: 3; grid-column: 5;">YRight</button>
+    <button onclick="sendCommand('bb')" style="grid-column: 3; grid-row: 4;">Bwd</button>
+    <button onclick="sendCommand('b')" style="grid-column: 3; grid-row: 5;">Bwd!</button>
 </div>
 
 <script>

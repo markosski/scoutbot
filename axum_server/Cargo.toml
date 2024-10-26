@@ -8,4 +8,3 @@ edition = "2021"
 [dependencies]
 axum = "0.6"
 tokio = { version = "1", features = ["full"] }
-serialport = "4.0"

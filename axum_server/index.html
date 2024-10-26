@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Vehicle Remote Controller</title>
     <style>
         body {
@@ -28,32 +28,40 @@
             background-color: #007BFF;
             color: white;
             transition: background-color 0.3s;
+            touch-action: manipulation;
         }
         button:hover {
             background-color: #0056b3;
+        }
+        .noselect {
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -khtml-user-select: none; /* Konqueror HTML */
+            -moz-user-select: none; /* Old versions of Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                        supported by Chrome, Edge, Opera and Firefox */
         }
     </style>
 </head>
 <body>
 
 <div class="controller">
-    <button onclick="sendCommand('f')" style="grid-column: 3; grid-row: 1;">Fwd!</button>
-    <button onclick="sendCommand('ff')" style="grid-column: 3; grid-row: 2;">Fwd</button>
-    <button onclick="sendCommand('x')" style="grid-row: 3; grid-column: 1;">YLeft</button>
-    <button onclick="sendCommand('l')" style="grid-row: 3; grid-column: 2;">Left</button>
-    <button onclick="sendCommand('s')" style="grid-row: 3; grid-column: 3;">Stop</button>
-    <button onclick="sendCommand('r')" style="grid-row: 3; grid-column: 4;">Right</button>
-    <button onclick="sendCommand('y')" style="grid-row: 3; grid-column: 5;">YRight</button>
-    <button onclick="sendCommand('bb')" style="grid-column: 3; grid-row: 4;">Bwd</button>
-    <button onclick="sendCommand('b')" style="grid-column: 3; grid-row: 5;">Bwd!</button>
+    <button class="noselect" ontouchstart="sendCommand('f')" ontouchend="sendCommand('s')" style="grid-column: 3; grid-row: 2;">Fwd</button>
+    <button class="noselect" ontouchstart="sendCommand('l')" ontouchend="sendCommand('s')" style="grid-row: 3; grid-column: 2;">Left</button>
+    <button class="noselect" ontouchstart="sendCommand('x')" ontouchend="sendCommand('s')" style="grid-row: 2; grid-column: 2;">YLeft</button>
+    <button class="noselect" ontouchstart="sendCommand('s')" ontouchend="sendCommand('s')" style="grid-row: 3; grid-column: 3;">Stop</button>
+    <button class="noselect" ontouchstart="sendCommand('y')" ontouchend="sendCommand('s')" style="grid-row: 2; grid-column: 4;">YRight</button>
+    <button class="noselect" ontouchstart="sendCommand('r')" ontouchend="sendCommand('s')" style="grid-row: 3; grid-column: 4;">Right</button>
+    <button class="noselect" ontouchstart="sendCommand('b')" ontouchend="sendCommand('s')" style="grid-column: 3; grid-row: 4;">Bwd</button>
 </div>
 
 <script>
     function sendCommand(command) {
         if (command == 's') {
-            var url = `http://127.0.0.1:3000/stop`;
+            var url = `http://192.168.1.35:3000/stop`;
         } else {
-            var url = `http://127.0.0.1:3000/move/${command}`;
+            var url = `http://192.168.1.35:3000/move/${command}`;
         }
 
         fetch(url, {

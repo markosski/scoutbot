@@ -1,15 +1,31 @@
 import socket
 import serial
+import time
 
-local_address = '0.0.0.0'  # Replace with the target IP address
-local_port = 12345
-udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-udp_socket.bind((local_address, local_port))
+def retry(max_retries=3, delay=1, exceptions=(Exception,)):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            retries = 0
+            while retries < max_retries:
+                try:
+                    return func(*args, **kwargs)
+                except exceptions as e:
+                    retries += 1
+                    print(f"Attempt {retries} failed. Retrying in {delay} seconds...")
+                    time.sleep(delay)
+            raise Exception("Maximum retries exceeded")
+        return wrapper
+    return decorator
 
-ser = serial.Serial(
-    port='/dev/tty.usbmodem14201',  # Replace with your port name
-    baudrate=9600        # Match the device's baud rate
-)
+
+@retry(max_retries=100, delay=3)
+def serial_conn():
+    ser = serial.Serial(
+        #port='/dev/tty.usbmodem14201',  # Replace with your port name
+        port='/dev/ttyACM0',  # Replace with your port name
+        baudrate=9600        # Match the device's baud rate
+    )
+    return ser
 
 def read():
     print("Start UDP listener")
@@ -20,4 +36,11 @@ def read():
         ser.write(data)
 
 if __name__ == '__main__':
+    local_address = '0.0.0.0'  # Replace with the target IP address
+    local_port = 12345
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_socket.bind((local_address, local_port))
+
+    ser = serial_conn()
     read()
+

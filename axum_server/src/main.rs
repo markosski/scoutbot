@@ -18,7 +18,7 @@ use tokio::{
     task::{JoinHandle, spawn},
     time::sleep,
 };
-use serialport::{SerialPortBuilder, DataBits, Parity, StopBits, FlowControl};
+// use serialport::{SerialPortBuilder, DataBits, Parity, StopBits, FlowControl};
 
 // Define shared state to keep track of the current background task
 struct AppState {
@@ -38,12 +38,11 @@ async fn main() {
     let app = Router::new()
         .route("/", get(home))
         .route("/move/:direction", post(move_direction))
-        .route("/start_task2", post(start_task2))
         .route("/stop", post(stop_current_task))
         .layer(Extension(state));
 
     // Define the address for the server to bind to
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
 
     // Run the server
     println!("Server running at http://{}", addr);
@@ -56,7 +55,7 @@ async fn main() {
 async fn home() -> impl IntoResponse {
     // Read the HTML file
     let html_content = fs::read_to_string("index.html")
-        .unwrap_or_else(|_| "<h1>Error reading file</h1>".to_string());
+        .unwrap_or_else(|_| "<p>Error reading file, make sure file is in the root dir of the application</p>".to_string());
 
     // Return the HTML content as a response
     Html(html_content)
@@ -78,37 +77,40 @@ async fn move_direction(
         let mut stop_rx = rx;
 
         // Set up UDP socket to send messages
-        // let socket = UdpSocket::bind("0.0.0.0:0").await.unwrap();
-        // let target_addr = "192.168.1.35:12345".parse::<SocketAddr>().unwrap();
+        let socket = UdpSocket::bind("0.0.0.0:0").await.unwrap();
+        let target_addr = "127.0.0.1:12345".parse::<SocketAddr>().unwrap();
 
         // Serial
-        let mut serial = serialport::new("/dev/tty.usbmodem14201", 9600).open().expect("Failed to open port");
+        // let mut serial = serialport::new("/dev/ttyACM0", 9600).open().expect("Failed to open port");
+        println!("Task received moved direction {}", direction);
 
-        if direction == "x" || direction == "y" || direction == "l" || direction == "r" {
+        loop {
+            // // Task 1 specific behavior
+            // println!("Move task is running...");
+            // // Send a UDP message with character 'f'
             // let _ = socket.send_to(direction.as_bytes(), &target_addr).await;
-            serial.write(direction.as_bytes()).ok();
-        } else if direction == "ff" {
-            // let _ = socket.send_to("f".as_bytes(), &target_addr).await;
-            serial.write(direction.as_bytes()).ok();
-        } else if direction == "bb" {
-            // let _ = socket.send_to("b".as_bytes(), &target_addr).await;
-            serial.write(direction.as_bytes()).ok();
-        } else {
-            loop {
-                // Task 1 specific behavior
-                println!("Task 1 is running...");
-                // Send a UDP message with character 'f'
-                // let _ = socket.send_to(direction.as_bytes(), &target_addr).await;
-                serial.write(direction.as_bytes()).ok();
+            // // serial.write(direction.as_bytes()).ok();
 
-                // Sleep for 150 milliseconds
-                sleep(Duration::from_millis(100)).await;
+            // // Sleep for 150 milliseconds
+            // sleep(Duration::from_millis(100)).await;
 
-                // Check for stop signal
-                if stop_rx.try_recv().is_ok() {
-                    println!("Task 1 received stop signal.");
+            // // Check for stop signal
+            // if stop_rx.try_recv().is_ok() {
+            //     println!("Move task received stop signal.");
+            //     break;
+            // }
+
+            tokio::select! {
+                // Wait for the stop signal
+                _ = &mut stop_rx => {
+                    println!("Task received stop signal.");
                     break;
                 }
+                // Perform the UDP sending and sleep
+                _ = async {
+                    let _ = socket.send_to(direction.as_bytes(), &target_addr).await;
+                    sleep(Duration::from_millis(50)).await;
+                } => {}
             }
         }
     });
@@ -120,43 +122,7 @@ async fn move_direction(
     *stop_signal = Some(tx);
 
     // Respond that the new task has started
-    "Task 1 started".into_response()
-}
-
-// Handler to start task 2
-async fn start_task2(
-    Extension(state): Extension<Arc<AppState>>,
-) -> impl IntoResponse {
-    // Stop any existing task before starting a new one
-    stop_current_task_helper(&state).await;
-
-    // Create a new stop signal
-    let (tx, rx) = oneshot::channel();
-
-    // Spawn a new background task
-    let handle = spawn(async move {
-        let mut stop_rx = rx;
-        loop {
-            // Task 2 specific behavior
-            println!("Task 2 is running...");
-            sleep(Duration::from_secs(5)).await;
-
-            // Check for stop signal
-            if stop_rx.try_recv().is_ok() {
-                println!("Task 2 received stop signal.");
-                break;
-            }
-        }
-    });
-
-    // Save the new task handle and stop signal in the state
-    let mut current_task = state.current_task.lock().await;
-    let mut stop_signal = state.stop_signal.lock().await;
-    *current_task = Some(handle);
-    *stop_signal = Some(tx);
-
-    // Respond that the new task has started
-    "Task 2 started".into_response()
+    "Move task started".into_response()
 }
 
 // Handler to stop the current task
@@ -174,6 +140,7 @@ async fn stop_current_task(
 
 // Helper function to stop the current task if it's running
 async fn stop_current_task_helper(state: &Arc<AppState>) -> bool {
+    println!("Attempting to stop current task");
     // Lock the stop signal to notify the task
     let mut stop_signal = state.stop_signal.lock().await;
     if let Some(tx) = stop_signal.take() {

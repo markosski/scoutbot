@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o xtrace
+
+readonly TARGET_HOST=rpi@192.168.1.35
+readonly TARGET_PATH=/home/rpi/scoutbot-remote-controller
+readonly TARGET_ARCH=armv7-unknown-linux-gnueabihf
+readonly SOURCE_PATH=./target/${TARGET_ARCH}/release/axum-server
+
+cargo build --release --target=${TARGET_ARCH}
+rsync ${SOURCE_PATH} ${TARGET_HOST}:${TARGET_PATH}

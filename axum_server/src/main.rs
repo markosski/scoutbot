@@ -75,7 +75,6 @@ async fn move_direction(
     // Spawn a new background task
     let handle = spawn(async move {
         let mut stop_rx = rx;
-
         // Set up UDP socket to send messages
         let socket = UdpSocket::bind("0.0.0.0:0").await.unwrap();
         let target_addr = "127.0.0.1:12345".parse::<SocketAddr>().unwrap();
@@ -85,21 +84,6 @@ async fn move_direction(
         println!("Task received moved direction {}", direction);
 
         loop {
-            // // Task 1 specific behavior
-            // println!("Move task is running...");
-            // // Send a UDP message with character 'f'
-            // let _ = socket.send_to(direction.as_bytes(), &target_addr).await;
-            // // serial.write(direction.as_bytes()).ok();
-
-            // // Sleep for 150 milliseconds
-            // sleep(Duration::from_millis(100)).await;
-
-            // // Check for stop signal
-            // if stop_rx.try_recv().is_ok() {
-            //     println!("Move task received stop signal.");
-            //     break;
-            // }
-
             tokio::select! {
                 // Wait for the stop signal
                 _ = &mut stop_rx => {
@@ -109,10 +93,12 @@ async fn move_direction(
                 // Perform the UDP sending and sleep
                 _ = async {
                     let _ = socket.send_to(direction.as_bytes(), &target_addr).await;
+                    println!("UDP data sent.");
                     sleep(Duration::from_millis(50)).await;
                 } => {}
             }
         }
+        println!("Task stopped.");
     });
 
     // Save the new task handle and stop signal in the state

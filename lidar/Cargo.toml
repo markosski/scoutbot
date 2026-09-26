@@ -1,0 +1,15 @@
+[package]
+name = "rplidar-viewer"
+version = "0.1.0"
+edition = "2024"
+description = "Native live scan visualizer for the Slamtec RPLIDAR C1"
+license = "MIT"
+
+[dependencies]
+eframe = "0.33"
+serialport = { version = "4.8", default-features = false }
+
+[profile.release]
+lto = "thin"
+strip = true
+

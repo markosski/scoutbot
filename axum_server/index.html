@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Vehicle Remote Controller</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <style>
         body {
             display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
             background-color: #f0f0f0;
             font-family: Arial, sans-serif;
         }
@@ -45,46 +45,47 @@
     </style>
 </head>
 <body>
-<div>
-    <center><img src="stream.mjpg" width="640" width="480"></center>
-</div>
-<div class="controller">
-    <button class="noselect" ontouchstart="sendCommand('f')" ontouchend="sendCommand('s')" style="grid-row: 1; grid-column: 2;">Fwd</button>
-    <button class="noselect" ontouchstart="sendCommand('l')" ontouchend="sendCommand('s')" style="grid-row: 2; grid-column: 1;">Left</button>
-    <button class="noselect" ontouchstart="sendCommand('x')" ontouchend="sendCommand('s')" style="grid-row: 1; grid-column: 1;">Yaw Left</button>
-    <button class="noselect" ontouchstart="sendCommand('s')" ontouchend="sendCommand('s')" style="grid-row: 3; grid-column: 2;">Stop</button>
-    <button class="noselect" ontouchstart="sendCommand('y')" ontouchend="sendCommand('s')" style="grid-row: 1; grid-column: 3;">Yaw Right</button>
-    <button class="noselect" ontouchstart="sendCommand('r')" ontouchend="sendCommand('s')" style="grid-row: 2; grid-column: 3;">Right</button>
-    <button class="noselect" ontouchstart="sendCommand('b')" ontouchend="sendCommand('s')" style="grid-row: 2; grid-column: 2;">Bwd</button>
-</div>
-
-<script>
-    function sendCommand(command) {
-        if (command == 's') {
-            var url = `http://192.168.1.35:3000/stop`;
-        } else {
-            var url = `http://192.168.1.35:3000/move/${command}`;
-        }
-
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ command })
-        })
-        .then(response => {
-            if (response.ok) {
-                console.log(`Command ${command} sent successfully.`);
+    <div class="container text-center">
+        <div class="row">
+            <img src="http://192.168.1.35:8000/stream.mjpg" class="col">
+        </div>
+        <div class="controller row justify-content-center m-3">
+            <button class="noselect" onkeydown="sendCommand('f')" onkeypup="sendCommand('s')" ontouchstart="sendCommand('f')" ontouchend="sendCommand('s')" style="grid-row: 1; grid-column: 2;">Fwd</button>
+            <button class="noselect" ontouchstart="sendCommand('l')" ontouchend="sendCommand('s')" style="grid-row: 2; grid-column: 1;">Left</button>
+            <button class="noselect" ontouchstart="sendCommand('x')" ontouchend="sendCommand('s')" style="grid-row: 1; grid-column: 1;">Yaw Left</button>
+            <button class="noselect" ontouchstart="sendCommand('s')" ontouchend="sendCommand('s')" style="grid-row: 3; grid-column: 2;">Stop</button>
+            <button class="noselect" ontouchstart="sendCommand('y')" ontouchend="sendCommand('s')" style="grid-row: 1; grid-column: 3;">Yaw Right</button>
+            <button class="noselect" ontouchstart="sendCommand('r')" ontouchend="sendCommand('s')" style="grid-row: 2; grid-column: 3;">Right</button>
+            <button class="noselect" ontouchstart="sendCommand('b')" ontouchend="sendCommand('s')" style="grid-row: 2; grid-column: 2;">Bwd</button>
+        </div>
+    </div>
+    <script>
+        function sendCommand(command) {
+            if (command == 's') {
+                var url = `http://192.168.1.35:3000/stop`;
             } else {
-                console.error('Error sending command:', response.statusText);
+                var url = `http://192.168.1.35:3000/move/${command}`;
             }
-        })
-        .catch(error => {
-            console.error('Fetch error:', error);
-        });
-    }
-</script>
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ command })
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log(`Command ${command} sent successfully.`);
+                } else {
+                    console.error('Error sending command:', response.statusText);
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+            });
+        }
+    </script>
 
 </body>
 </html>
